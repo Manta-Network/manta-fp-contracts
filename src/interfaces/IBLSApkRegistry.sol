@@ -29,21 +29,11 @@ interface IBLSApkRegistry {
         uint256 totalMantaStaking;
     }
 
-    event NewPubkeyRegistration(
-        address indexed operator,
-        BN254.G1Point pubkeyG1,
-        BN254.G2Point pubkeyG2
-    );
+    event NewPubkeyRegistration(address indexed operator, BN254.G1Point pubkeyG1, BN254.G2Point pubkeyG2);
 
-    event OperatorAdded(
-        address operator,
-        bytes32 operatorId
-    );
+    event OperatorAdded(address operator, bytes32 operatorId);
 
-    event OperatorRemoved(
-        address operator,
-        bytes32 operatorId
-    );
+    event OperatorRemoved(address operator, bytes32 operatorId);
 
     function registerOperator(address operator) external;
 
@@ -55,17 +45,14 @@ interface IBLSApkRegistry {
         BN254.G1Point memory msgHash
     ) external returns (bytes32);
 
-    function checkSignatures(
-        bytes32 msgHash,
-        uint256 referenceBlockNumber,
-        FinalityNonSignerAndSignature memory params
-    ) external view returns (StakeTotals memory, bytes32);
-
+    function checkSignatures(bytes32 msgHash, uint256 referenceBlockNumber, FinalityNonSignerAndSignature memory params)
+        external
+        view
+        returns (StakeTotals memory, bytes32);
 
     function getRegisteredPubkey(address operator) external view returns (BN254.G1Point memory, bytes32);
 
     function addOrRemoveBlsRegisterWhitelist(address operator, bool isAdd) external;
 
-    function pubkeyRegistrationMessageHash(address operator) external view returns (BN254.G1Point memory);
-
+    function getPubkeyRegMessageHash(address operator) external view returns (BN254.G1Point memory);
 }
