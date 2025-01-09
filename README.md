@@ -4,7 +4,7 @@ parent:
 -->
 
 <div align="center">
-  <h1> l2fp-contracts</h1>
+  <h1> manta-fp-contracts</h1>
 </div>
 
 <div align="center">
@@ -21,7 +21,7 @@ parent:
 
 ## 1.Finality Provider Contracts for layer2
 
-l2fp-contracts is a suite of contracts designed for managing nodes and verifying BLS signatures within a Layer 2 fast finality network. It aggregates signature verifications from Finality Providers in the Babylon and Symbiotic networks to ensure the network's finality.
+manta-fp-contracts is a suite of contracts designed for managing nodes and verifying BLS signatures within a Layer 2 fast finality network. It aggregates signature verifications from Finality Providers in the Babylon and Symbiotic networks to ensure the network's finality.
 
 ## 2.Usage
 
