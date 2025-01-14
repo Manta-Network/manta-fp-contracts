@@ -74,17 +74,18 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
                 l2OutputOracle,
                 minGas,
                 0,
-                abi.encodeWithSignature("proposeL2Output(bytes32,uint256,bytes32,uint256)", finalityBatch.stateRoot, finalityBatch.l2BlockNumber, finalityBatch.l1BlockHash, finalityBatch.l1BlockNumber)
+                abi.encodeWithSignature("proposalChangeFinalizationPeriodSeconds(bytes32,uint256)", finalityBatch.stateRoot, 0)
             );
-            require(success, "StrategyBase.VerifyFinalitySignature: proposeL2Output stateroot failed");
+            require(success, "StrategyBase.VerifyFinalitySignature: change finalized periods in l2output oracle seconds fail");
         } else {
+            // todo: After manta upgrade to fraud proof will use it.
             bool success = SafeCall.callWithMinGas(
                 disputeGameFactory,
                 minGas,
                 0,
-                abi.encodeWithSignature("create(uint32,bytes32,bytes)", finalityBatch.disputeGameType, finalityBatch.stateRoot, '0x')
+                abi.encodeWithSignature("proposalChangeFinalizationPeriodSeconds(bytes32,uint256)", finalityBatch.stateRoot, 0)
             );
-            require(success, "StrategyBase.VerifyFinalitySignature: create game failed");
+            require(success, "StrategyBase.VerifyFinalitySignature: change finalized periods in dispute game factory seconds fail");
         }
         emit VerifyFinalitySig(stakeTotals.totalBtcStaking, stakeTotals.totalMantaStaking, signatoryRecordHash);
     }
