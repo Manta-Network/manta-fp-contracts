@@ -12,6 +12,18 @@ import "./FinalityRelayerManagerStorage.sol";
 
 contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerStorage, IFinalityRelayerManager {
 
+    uint256 internal constant TOTAL_CHALLENGE_PERIOD = 259200; // 3 days
+
+    uint256 internal constant MANTA_REDUCE_PERIOD = 86400;  // 1 days
+
+    uint256 internal constant BITCOIN_REDUCE_PERIOD = 86400; // 1 days
+
+    uint256 internal constant MIN_CHALLENGE_PERIOD = 43200 ; // 0.5 days
+
+    uint256 internal constant TARGET_MANTA =  1000000 * 10e17;
+
+    uint256 internal constant TARGET_BITCOIN = 1000 * 10e7;
+
     modifier onlyOperatorWhitelistManager() {
         require(
             msg.sender == operatorWhitelistManager,
@@ -68,13 +80,16 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
             bytes32 signatoryRecordHash
         ) = blsApkRegistry.checkSignatures(finalityBatch.msgHash, finalityBatch.l2BlockNumber, finalityNonSignerAndSignature);
 
+
+        uint256 reduciblePeriod = reducibleChallengePeriod(finalityNonSignerAndSignature.totalMantaStake, finalityNonSignerAndSignature.totalBtcStake);
+
         // call l2output oracle contacts
         if (!isDisputeGameFactory) {
             bool success = SafeCall.callWithMinGas(
                 l2OutputOracle,
                 minGas,
                 0,
-                abi.encodeWithSignature("proposalChangeFinalizationPeriodSeconds(bytes32,uint256)", finalityBatch.stateRoot, 0)
+                abi.encodeWithSignature("proposalChangeFinalizationPeriodSeconds(bytes32,uint256)", finalityBatch.stateRoot, reduciblePeriod)
             );
             require(success, "StrategyBase.VerifyFinalitySignature: change finalized periods in l2output oracle seconds fail");
         } else {
@@ -83,7 +98,7 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
                 disputeGameFactory,
                 minGas,
                 0,
-                abi.encodeWithSignature("proposalChangeFinalizationPeriodSeconds(bytes32,uint256)", finalityBatch.stateRoot, 0)
+                abi.encodeWithSignature("proposalChangeFinalizationPeriodSeconds(bytes32,uint256)", finalityBatch.stateRoot, reduciblePeriod)
             );
             require(success, "StrategyBase.VerifyFinalitySignature: change finalized periods in dispute game factory seconds fail");
         }
@@ -96,5 +111,14 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
             "FinalityRelayerManager.addOperatorWhitelist: operator address is zero"
         );
         operatorWhitelist[operator] = isAdd;
+    }
+
+    // ==============================internal function====================================
+    function reducibleChallengePeriod(uint256 votedManta, uint256 votedBitcoin) internal pure returns(uint256) {
+        uint256 reduciblePeriod =  (votedManta / TARGET_MANTA) * MANTA_REDUCE_PERIOD + (votedBitcoin / TARGET_BITCOIN) * BITCOIN_REDUCE_PERIOD;
+        if (reduciblePeriod < MIN_CHALLENGE_PERIOD) {
+            return MIN_CHALLENGE_PERIOD;
+        }
+        return reduciblePeriod;
     }
 }

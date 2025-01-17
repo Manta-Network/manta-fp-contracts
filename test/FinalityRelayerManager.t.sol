@@ -60,7 +60,7 @@ contract FinalityRelayerManagerTest is Test {
         finalityRelayerManager = FinalityRelayerManager(address(proxy));
     }
 
-    function testInitialization() public {
+    function testInitialization() public view {
         assertEq(finalityRelayerManager.owner(), owner.addr);
         assertEq(address(finalityRelayerManager.blsApkRegistry()), address(blsApkRegistry));
         assertEq(finalityRelayerManager.l2OutputOracle(), l2OutputOracle);
@@ -91,7 +91,7 @@ contract FinalityRelayerManagerTest is Test {
         // First add to whitelist
         vm.prank(operatorWhitelistManager.addr);
         finalityRelayerManager.addOrRemoveOperatorWhitelist(operator.addr, true);
-        
+
         // Then remove from whitelist
         vm.prank(operatorWhitelistManager.addr);
         finalityRelayerManager.addOrRemoveOperatorWhitelist(operator.addr, false);
@@ -112,18 +112,18 @@ contract FinalityRelayerManagerTest is Test {
 
     function testRegisterOperator() public {
         string memory nodeUrl = "https://example.com";
-        
+
         // Add operator to whitelist first
         vm.prank(operatorWhitelistManager.addr);
         finalityRelayerManager.addOrRemoveOperatorWhitelist(operator.addr, true);
-        
+
         // Mock BLSApkRegistry.registerOperator call
         vm.mockCall(
             address(blsApkRegistry),
             abi.encodeWithSelector(IBLSApkRegistry.registerOperator.selector, operator.addr),
             abi.encode()
         );
-        
+
         // Register operator
         vm.prank(operator.addr);
         vm.expectEmit(true, false, false, true, address(finalityRelayerManager));
@@ -138,7 +138,7 @@ contract FinalityRelayerManagerTest is Test {
         );
         finalityRelayerManager.registerOperator("https://example.com");
     }
-    
+
     function testDeregisterOperator() public {
         console.log("Starting testDeregisterOperator...");
 
@@ -177,14 +177,14 @@ contract FinalityRelayerManagerTest is Test {
         // 1. Add operator to whitelist
         vm.prank(operatorWhitelistManager.addr);
         finalityRelayerManager.addOrRemoveOperatorWhitelist(operator.addr, true);
-        
+
         // 2. Mock BLSApkRegistry.deregisterOperator to fail
         vm.mockCallRevert(
             address(blsApkRegistry),
             abi.encodeWithSelector(IBLSApkRegistry.deregisterOperator.selector, operator.addr),
             "BLSApkRegistry.deregisterOperator: operator is not registered"
         );
-        
+
         // 3. Try to deregister and expect revert
         vm.prank(operator.addr);
         vm.expectRevert("BLSApkRegistry.deregisterOperator: operator is not registered");
