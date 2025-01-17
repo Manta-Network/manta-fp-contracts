@@ -10,6 +10,7 @@ interface IFinalityRelayerManager {
     event OperatorDeRegistered(address operator);
 
     event VerifyFinalitySig(
+        uint256 batchId,
         uint256 totalBtcStaking,
         uint256 totalMantaStaking,
         bytes32 signatoryRecordHash

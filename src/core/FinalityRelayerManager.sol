@@ -73,7 +73,8 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
     function VerifyFinalitySignature(
         FinalityBatch calldata finalityBatch,
         IBLSApkRegistry.FinalityNonSignerAndSignature memory finalityNonSignerAndSignature,
-        uint256 minGas
+        uint256 minGas,
+        uint256 batchId
     ) external {
         (
             IBLSApkRegistry.StakeTotals memory stakeTotals,
@@ -102,7 +103,7 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
             );
             require(success, "StrategyBase.VerifyFinalitySignature: change finalized periods in dispute game factory seconds fail");
         }
-        emit VerifyFinalitySig(stakeTotals.totalBtcStaking, stakeTotals.totalMantaStaking, signatoryRecordHash);
+        emit VerifyFinalitySig(batchId, stakeTotals.totalBtcStaking, stakeTotals.totalMantaStaking, signatoryRecordHash);
     }
 
     function addOrRemoveOperatorWhitelist(address operator, bool isAdd) external onlyOperatorWhitelistManager {
