@@ -18,4 +18,5 @@ abstract contract FinalityRelayerManagerStorage is Initializable {
 
     bool public isDisputeGameFactory;
 
+    uint256 public confirmBatchId;
 }

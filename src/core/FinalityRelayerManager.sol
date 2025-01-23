@@ -50,6 +50,7 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
         disputeGameFactory = _disputeGameFactory;
         isDisputeGameFactory = _isDisputeGameFactory;
         operatorWhitelistManager = _operatorWhitelistManager;
+        confirmBatchId = 0;
     }
 
     function registerOperator(string calldata nodeUrl) external {
@@ -73,14 +74,12 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
     function VerifyFinalitySignature(
         FinalityBatch calldata finalityBatch,
         IBLSApkRegistry.FinalityNonSignerAndSignature memory finalityNonSignerAndSignature,
-        uint256 minGas,
-        uint256 batchId
+        uint256 minGas
     ) external {
         (
             IBLSApkRegistry.StakeTotals memory stakeTotals,
             bytes32 signatoryRecordHash
         ) = blsApkRegistry.checkSignatures(finalityBatch.msgHash, finalityBatch.l2BlockNumber, finalityNonSignerAndSignature);
-
 
         uint256 reduciblePeriod = reducibleChallengePeriod(finalityNonSignerAndSignature.totalMantaStake, finalityNonSignerAndSignature.totalBtcStake);
 
@@ -103,7 +102,7 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
             );
             require(success, "StrategyBase.VerifyFinalitySignature: change finalized periods in dispute game factory seconds fail");
         }
-        emit VerifyFinalitySig(batchId, stakeTotals.totalBtcStaking, stakeTotals.totalMantaStaking, signatoryRecordHash);
+        emit VerifyFinalitySig(confirmBatchId++, stakeTotals.totalBtcStaking, stakeTotals.totalMantaStaking, signatoryRecordHash);
     }
 
     function addOrRemoveOperatorWhitelist(address operator, bool isAdd) external onlyOperatorWhitelistManager {
