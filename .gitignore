@@ -14,3 +14,5 @@ docs/
 .env
 ./lib
 .idea
+
+deployed_addresses.json

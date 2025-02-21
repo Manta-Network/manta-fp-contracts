@@ -79,7 +79,7 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
         (
             IBLSApkRegistry.StakeTotals memory stakeTotals,
             bytes32 signatoryRecordHash
-        ) = blsApkRegistry.checkSignatures(finalityBatch.msgHash, finalityBatch.l2BlockNumber, finalityNonSignerAndSignature);
+        ) = blsApkRegistry.checkSignatures(finalityBatch.msgHash, finalityBatch.l1BlockNumber, finalityNonSignerAndSignature);
 
         uint256 reduciblePeriod = reducibleChallengePeriod(finalityNonSignerAndSignature.totalMantaStake, finalityNonSignerAndSignature.totalBtcStake);
 

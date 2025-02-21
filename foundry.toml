@@ -10,9 +10,8 @@ ffi = true
 ast = true
 build_info = true
 extra_output = ["storageLayout"]
+fs_permissions = [{ access = "read-write", path = "./"}]
 
 [rpc_endpoints]
 sepolia = "${SEPOLIA_RPC_URL}"
 
-[etherscan]
-sepolia = { key = "${ETHERSCAN_API_KEY}" }

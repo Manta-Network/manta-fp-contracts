@@ -22,7 +22,6 @@ interface IFinalityRelayerManager {
         bytes32 l1BlockHash;
         uint256 l1BlockNumber;
         bytes32 msgHash;
-        uint32  disputeGameType;
     }
 
     struct PubkeyRegistrationParams {

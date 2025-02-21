@@ -198,8 +198,7 @@ contract FinalityRelayerManagerTest is Test {
             stateRoot: bytes32(uint256(2)),
             l2BlockNumber: 100,
             l1BlockHash: bytes32(uint256(3)),
-            l1BlockNumber: 1000,
-            disputeGameType: 1
+            l1BlockNumber: 1000
         });
 
         IBLSApkRegistry.FinalityNonSignerAndSignature memory nonSignerAndSig = IBLSApkRegistry.FinalityNonSignerAndSignature({
@@ -258,8 +257,7 @@ contract FinalityRelayerManagerTest is Test {
             stateRoot: bytes32(uint256(2)),
             l2BlockNumber: 100,
             l1BlockHash: bytes32(uint256(3)),
-            l1BlockNumber: 1000,
-            disputeGameType: 1
+            l1BlockNumber: 1000
         });
 
         IBLSApkRegistry.FinalityNonSignerAndSignature memory nonSignerAndSig = IBLSApkRegistry.FinalityNonSignerAndSignature({
@@ -323,8 +321,7 @@ contract FinalityRelayerManagerTest is Test {
             stateRoot: bytes32(uint256(2)),
             l2BlockNumber: 100,
             l1BlockHash: bytes32(uint256(3)),
-            l1BlockNumber: 1000,
-            disputeGameType: 1
+            l1BlockNumber: 1000
         });
 
         IBLSApkRegistry.FinalityNonSignerAndSignature memory nonSignerAndSig = IBLSApkRegistry.FinalityNonSignerAndSignature({

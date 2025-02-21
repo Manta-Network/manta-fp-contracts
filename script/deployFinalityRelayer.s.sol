@@ -67,6 +67,12 @@ contract deployFinalityRelayerScript is Script {
 
         console.log("deploy proxyBlsApkRegistry:", address(proxyBlsApkRegistry));
         console.log("deploy proxyFinalityRelayerManager:", address(proxyFinalityRelayerManager));
+        string memory path = "deployed_addresses.json";
+        string memory data = string(abi.encodePacked(
+            '{"proxyBlsApkRegistry": "', vm.toString(address(proxyBlsApkRegistry)), '", ',
+            '"proxyFinalityRelayerManager": "', vm.toString(address(proxyFinalityRelayerManager)), '"}'
+        ));
+        vm.writeJson(data, path);
         vm.stopBroadcast();
     }
 
