@@ -302,7 +302,7 @@ contract FinalityRelayerManagerTest is Test {
             minGas,
             abi.encodeWithSignature(
                 "create(uint32,bytes32,bytes)",
-                finalityBatch.disputeGameType,
+                0,
                 finalityBatch.stateRoot,
                 "0x"
             ),
