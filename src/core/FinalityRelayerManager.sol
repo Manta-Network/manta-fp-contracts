@@ -75,7 +75,7 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
         FinalityBatch calldata finalityBatch,
         IBLSApkRegistry.FinalityNonSignerAndSignature memory finalityNonSignerAndSignature,
         uint256 minGas
-    ) external {
+    ) external onlyOperatorWhitelistManager {
         (
             IBLSApkRegistry.StakeTotals memory stakeTotals,
             bytes32 signatoryRecordHash
