@@ -20,9 +20,9 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
 
     uint256 internal constant MIN_CHALLENGE_PERIOD = 43200 ; // 0.5 days
 
-    uint256 internal constant TARGET_MANTA =  1000000 * 10e17;
+    uint256 public TARGET_MANTA =  1000000 * 10e17;
 
-    uint256 internal constant TARGET_BITCOIN = 1000 * 10e7;
+    uint256 public TARGET_BITCOIN = 1000 * 10e7;
 
     modifier onlyOperatorWhitelistManager() {
         require(
@@ -113,10 +113,26 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
         operatorWhitelist[operator] = isAdd;
     }
 
+    function setTargetManta(uint256 _targetManta) external onlyOperatorWhitelistManager {
+        require(
+            _targetManta != 0,
+            "FinalityRelayerManager.setTargetManta: targetManta is zero"
+        );
+        TARGET_MANTA = _targetManta;
+    }
+
+    function setTargetBitcoin(uint256 _targetBitcoin) external onlyOperatorWhitelistManager {
+        require(
+            _targetBitcoin != 0,
+            "FinalityRelayerManager.setTargetBitcoin: _targetBitcoin is zero"
+        );
+        TARGET_BITCOIN = _targetBitcoin;
+    }
+
     // ==============================internal function====================================
-    function reducibleChallengePeriod(uint256 votedManta, uint256 votedBitcoin) internal pure returns(uint256) {
-        uint256 reduciblePeriod =  (votedManta / TARGET_MANTA) * MANTA_REDUCE_PERIOD + (votedBitcoin / TARGET_BITCOIN) * BITCOIN_REDUCE_PERIOD;
-        if (reduciblePeriod < MIN_CHALLENGE_PERIOD) {
+    function reducibleChallengePeriod(uint256 votedManta, uint256 votedBitcoin) internal view returns(uint256) {
+        uint256 reduciblePeriod =  (votedManta * MANTA_REDUCE_PERIOD) / TARGET_MANTA + (votedBitcoin * BITCOIN_REDUCE_PERIOD) / TARGET_BITCOIN;
+        if ((TOTAL_CHALLENGE_PERIOD - reduciblePeriod) < MIN_CHALLENGE_PERIOD) {
             return MIN_CHALLENGE_PERIOD;
         }
         return reduciblePeriod;
