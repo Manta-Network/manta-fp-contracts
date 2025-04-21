@@ -61,7 +61,7 @@ contract deployFinalityRelayerScript is Script {
                 proxyBlsApkRegistry,
                 l2OutputOracleAddr,
                 disputeGameFactoryAddr,
-                deployerAddress
+                relayerManagerAddr
             )
         );
 
