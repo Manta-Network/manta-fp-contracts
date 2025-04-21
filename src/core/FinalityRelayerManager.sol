@@ -134,10 +134,10 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
 
     // ==============================internal function====================================
     function reducibleChallengePeriod(uint256 votedManta, uint256 votedBitcoin) internal view returns(uint256) {
-        uint256 reduciblePeriod =  TOTAL_CHALLENGE_PERIOD - ((votedManta * MANTA_REDUCE_PERIOD) / TARGET_MANTA + (votedBitcoin * BITCOIN_REDUCE_PERIOD) / TARGET_BITCOIN);
-        if (reduciblePeriod < MIN_CHALLENGE_PERIOD) {
+        uint256 totalReduction = (votedManta * MANTA_REDUCE_PERIOD) / TARGET_MANTA + (votedBitcoin * BITCOIN_REDUCE_PERIOD) / TARGET_BITCOIN;
+        if (totalReduction > TOTAL_CHALLENGE_PERIOD - MIN_CHALLENGE_PERIOD) {
             return MIN_CHALLENGE_PERIOD;
         }
-        return reduciblePeriod;
+        return TOTAL_CHALLENGE_PERIOD - totalReduction;
     }
 }
