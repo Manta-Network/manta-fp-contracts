@@ -20,9 +20,9 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
 
     uint256 internal constant MIN_CHALLENGE_PERIOD = 43200 ; // 0.5 days
 
-    uint256 public TARGET_MANTA =  1000000 * 10e17;
+    uint256 public TARGET_MANTA;
 
-    uint256 public TARGET_BITCOIN = 1000 * 10e7;
+    uint256 public TARGET_BITCOIN;
 
     modifier onlyOperatorWhitelistManager() {
         require(
@@ -50,7 +50,10 @@ contract FinalityRelayerManager is OwnableUpgradeable, FinalityRelayerManagerSto
         disputeGameFactory = _disputeGameFactory;
         isDisputeGameFactory = _isDisputeGameFactory;
         operatorWhitelistManager = _operatorWhitelistManager;
+
         confirmBatchId = 0;
+        TARGET_MANTA =  1000000 * 10e17;
+        TARGET_BITCOIN = 1000 * 10e7;
     }
 
     function registerOperator(string calldata nodeUrl) external {
