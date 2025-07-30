@@ -125,34 +125,34 @@ contract BLSApkRegistry is Initializable, OwnableUpgradeable, IBLSApkRegistry, B
         return pubkeyHash;
     }
 
-    function checkSignatures(bytes32 msgHash, uint256 referenceBlockNumber, FinalityNonSignerAndSignature memory params)
-        public
-        view
-        returns (StakeTotals memory, bytes32)
-    {
+    function checkSignatures(
+        bytes32 msgHash,
+        uint256 referenceBlockNumber,
+        FinalityNonSignerAndSignature memory params
+    ) public view returns (StakeTotals memory, bytes32) {
         require(
-            referenceBlockNumber < uint32(block.number), "BLSSignatureChecker.checkSignatures: invalid reference block"
+            referenceBlockNumber < uint32(block.number),
+            "BLSSignatureChecker.checkSignatures: invalid reference block"
         );
-        BN254.G1Point memory signerApk = BN254.G1Point(0, 0);
+
+        BN254.G1Point memory signerApk = currentApk;
         bytes32[] memory nonSignersPubkeyHashes;
+
         if (params.nonSignerPubkeys.length > 0) {
             nonSignersPubkeyHashes = new bytes32[](params.nonSignerPubkeys.length);
             for (uint256 j = 0; j < params.nonSignerPubkeys.length; j++) {
                 nonSignersPubkeyHashes[j] = params.nonSignerPubkeys[j].hashG1Point();
-                signerApk = currentApk.plus(params.nonSignerPubkeys[j].negate());
+                signerApk = signerApk.plus(params.nonSignerPubkeys[j].negate());
             }
-        } else {
-            signerApk = currentApk;
         }
-        (bool pairingSuccessful, bool signatureIsValid) =
-            trySignatureAndApkVerification(msgHash, signerApk, params.apkG2, params.sigma);
+
+        (bool pairingSuccessful, bool signatureIsValid) = trySignatureAndApkVerification(msgHash, signerApk, params.apkG2, params.sigma);
         require(pairingSuccessful, "BLSSignatureChecker.checkSignatures: pairing precompile call failed");
         require(signatureIsValid, "BLSSignatureChecker.checkSignatures: signature is invalid");
 
         bytes32 signatoryRecordHash = keccak256(abi.encodePacked(referenceBlockNumber, nonSignersPubkeyHashes));
 
-        StakeTotals memory stakeTotals =
-            StakeTotals({totalBtcStaking: params.totalBtcStake, totalMantaStaking: params.totalMantaStake});
+        StakeTotals memory stakeTotals = StakeTotals({totalBtcStaking: params.totalBtcStake, totalMantaStaking: params.totalMantaStake});
 
         return (stakeTotals, signatoryRecordHash);
     }
