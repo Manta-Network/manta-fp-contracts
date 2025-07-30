@@ -42,6 +42,7 @@ contract BLSApkRegistry is Initializable, OwnableUpgradeable, IBLSApkRegistry, B
         _transferOwnership(_initialOwner);
         finalityRelayerManager = _finalityRelayerManager;
         relayerManager = _relayerManager;
+        totalNodes = 0;
         _initializeApk();
     }
 
@@ -54,17 +55,32 @@ contract BLSApkRegistry is Initializable, OwnableUpgradeable, IBLSApkRegistry, B
      * @param operator The address of the operator to be registered.
      */
     function registerOperator(address operator) public onlyFinalityRelayerManager {
+        require(operator != address(0), "BLSApkRegistry.registerBLSPublicKey: Operator is zero address");
+
+        require(!operatorIsRegister[operator], "BLSApkRegistry.registerBLSPublicKey: Operator have already register");
+
         (BN254.G1Point memory pubkey,) = getRegisteredPubkey(operator);
 
         _processApkUpdate(pubkey);
+
+        totalNodes += 1;
+
+        operatorIsRegister[operator] = true;
 
         emit OperatorAdded(operator, operatorToPubkeyHash[operator]);
     }
 
     function deregisterOperator(address operator) public onlyFinalityRelayerManager {
+        require(operatorIsRegister[operator], "BLSApkRegistry.registerBLSPublicKey: Operator have already deregister");
+
         (BN254.G1Point memory pubkey,) = getRegisteredPubkey(operator);
 
         _processApkUpdate(pubkey.negate());
+
+        operatorIsRegister[operator] = false;
+
+        totalNodes -= 1;
+
         emit OperatorRemoved(operator, operatorToPubkeyHash[operator]);
     }
 
@@ -133,6 +149,13 @@ contract BLSApkRegistry is Initializable, OwnableUpgradeable, IBLSApkRegistry, B
         require(
             referenceBlockNumber < uint32(block.number),
             "BLSSignatureChecker.checkSignatures: invalid reference block"
+        );
+        uint256 nonSingerNode = params.nonSignerPubkeys.length;
+        uint256 thresholdNodes = (totalNodes * 2) / 3;
+
+        require(
+            totalNodes - nonSingerNode > thresholdNodes,
+            "BLSSignatureChecker.checkSignatures: sign node less than threshold node"
         );
 
         BN254.G1Point memory signerApk = currentApk;
