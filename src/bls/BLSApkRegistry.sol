@@ -93,7 +93,7 @@ contract BLSApkRegistry is Initializable, OwnableUpgradeable, IBLSApkRegistry, B
             msg.sender == operator,
             "BLSApkRegistry.registerBLSPublicKey: this caller is not operator"
         );
-        
+
         require(
             blsRegisterWhitelist[msg.sender],
             "BLSApkRegistry.registerBLSPublicKey: this address have not permission to register bls key"
@@ -159,7 +159,7 @@ contract BLSApkRegistry is Initializable, OwnableUpgradeable, IBLSApkRegistry, B
         uint256 thresholdNodes = (totalNodes * 2) / 3;
 
         require(
-            totalNodes - nonSingerNode > thresholdNodes,
+            totalNodes - nonSingerNode >= thresholdNodes,
             "BLSSignatureChecker.checkSignatures: sign node less than threshold node"
         );
 
