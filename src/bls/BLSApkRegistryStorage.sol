@@ -20,11 +20,12 @@ abstract contract BLSApkRegistryStorage is Initializable, IBLSApkRegistry {
     mapping(address => bytes32) public operatorToPubkeyHash;
     mapping(bytes32 => address) public pubkeyHashToOperator;
     mapping(address => BN254.G1Point) public operatorToPubkey;
+    mapping(address => bool) public operatorIsRegister;
 
     BN254.G1Point public currentApk;
     ApkUpdate[] public apkHistory;
 
+    uint256 public totalNodes;
+
     mapping(address => bool) public blsRegisterWhitelist;
-
-
 }

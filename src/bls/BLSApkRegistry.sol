@@ -42,6 +42,7 @@ contract BLSApkRegistry is Initializable, OwnableUpgradeable, IBLSApkRegistry, B
         _transferOwnership(_initialOwner);
         finalityRelayerManager = _finalityRelayerManager;
         relayerManager = _relayerManager;
+        totalNodes = 0;
         _initializeApk();
     }
 
@@ -54,17 +55,32 @@ contract BLSApkRegistry is Initializable, OwnableUpgradeable, IBLSApkRegistry, B
      * @param operator The address of the operator to be registered.
      */
     function registerOperator(address operator) public onlyFinalityRelayerManager {
+        require(operator != address(0), "BLSApkRegistry.registerBLSPublicKey: Operator is zero address");
+
+        require(!operatorIsRegister[operator], "BLSApkRegistry.registerBLSPublicKey: Operator have already register");
+
         (BN254.G1Point memory pubkey,) = getRegisteredPubkey(operator);
 
         _processApkUpdate(pubkey);
+
+        totalNodes += 1;
+
+        operatorIsRegister[operator] = true;
 
         emit OperatorAdded(operator, operatorToPubkeyHash[operator]);
     }
 
     function deregisterOperator(address operator) public onlyFinalityRelayerManager {
+        require(operatorIsRegister[operator], "BLSApkRegistry.registerBLSPublicKey: Operator have already deregister");
+
         (BN254.G1Point memory pubkey,) = getRegisteredPubkey(operator);
 
         _processApkUpdate(pubkey.negate());
+
+        operatorIsRegister[operator] = false;
+
+        totalNodes -= 1;
+
         emit OperatorRemoved(operator, operatorToPubkeyHash[operator]);
     }
 
@@ -73,6 +89,11 @@ contract BLSApkRegistry is Initializable, OwnableUpgradeable, IBLSApkRegistry, B
         PubkeyRegistrationParams calldata params,
         BN254.G1Point calldata pubkeyRegistrationMessageHash
     ) external returns (bytes32) {
+        require(
+            msg.sender == operator,
+            "BLSApkRegistry.registerBLSPublicKey: this caller is not operator"
+        );
+
         require(
             blsRegisterWhitelist[msg.sender],
             "BLSApkRegistry.registerBLSPublicKey: this address have not permission to register bls key"
@@ -125,34 +146,41 @@ contract BLSApkRegistry is Initializable, OwnableUpgradeable, IBLSApkRegistry, B
         return pubkeyHash;
     }
 
-    function checkSignatures(bytes32 msgHash, uint256 referenceBlockNumber, FinalityNonSignerAndSignature memory params)
-        public
-        view
-        returns (StakeTotals memory, bytes32)
-    {
+    function checkSignatures(
+        bytes32 msgHash,
+        uint256 referenceBlockNumber,
+        FinalityNonSignerAndSignature memory params
+    ) public view returns (StakeTotals memory, bytes32) {
         require(
-            referenceBlockNumber < uint32(block.number), "BLSSignatureChecker.checkSignatures: invalid reference block"
+            referenceBlockNumber < uint32(block.number),
+            "BLSSignatureChecker.checkSignatures: invalid reference block"
         );
-        BN254.G1Point memory signerApk = BN254.G1Point(0, 0);
+        uint256 nonSingerNode = params.nonSignerPubkeys.length;
+        uint256 thresholdNodes = (totalNodes * 2) / 3;
+
+        require(
+            totalNodes - nonSingerNode >= thresholdNodes,
+            "BLSSignatureChecker.checkSignatures: sign node less than threshold node"
+        );
+
+        BN254.G1Point memory signerApk = currentApk;
         bytes32[] memory nonSignersPubkeyHashes;
+
         if (params.nonSignerPubkeys.length > 0) {
             nonSignersPubkeyHashes = new bytes32[](params.nonSignerPubkeys.length);
             for (uint256 j = 0; j < params.nonSignerPubkeys.length; j++) {
                 nonSignersPubkeyHashes[j] = params.nonSignerPubkeys[j].hashG1Point();
-                signerApk = currentApk.plus(params.nonSignerPubkeys[j].negate());
+                signerApk = signerApk.plus(params.nonSignerPubkeys[j].negate());
             }
-        } else {
-            signerApk = currentApk;
         }
-        (bool pairingSuccessful, bool signatureIsValid) =
-            trySignatureAndApkVerification(msgHash, signerApk, params.apkG2, params.sigma);
+
+        (bool pairingSuccessful, bool signatureIsValid) = trySignatureAndApkVerification(msgHash, signerApk, params.apkG2, params.sigma);
         require(pairingSuccessful, "BLSSignatureChecker.checkSignatures: pairing precompile call failed");
         require(signatureIsValid, "BLSSignatureChecker.checkSignatures: signature is invalid");
 
         bytes32 signatoryRecordHash = keccak256(abi.encodePacked(referenceBlockNumber, nonSignersPubkeyHashes));
 
-        StakeTotals memory stakeTotals =
-            StakeTotals({totalBtcStaking: params.totalBtcStake, totalMantaStaking: params.totalMantaStake});
+        StakeTotals memory stakeTotals = StakeTotals({totalBtcStaking: params.totalBtcStake, totalMantaStaking: params.totalMantaStake});
 
         return (stakeTotals, signatoryRecordHash);
     }
